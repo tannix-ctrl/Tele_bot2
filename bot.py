@@ -95,3 +95,116 @@ def bulk_check(dumps_file):
     # Bulk: python dump_checker.py dumps.txt
     # import sys
     # bulk_check(sys.argv[1])
+@bot.on(events.NewMessage(pattern='/check (.+)'))
+async def check_handler(event):
+    number = event.pattern_match.group(1)
+
+    if not number.isdigit():
+        await event.reply("❌ Send only numbers")
+        return
+
+    result = luhn_checksum(number)
+
+    msg = "✅ Valid" if result else "❌ Invalid"
+    await event.reply(msg)
+
+@bot.on(events.NewMessage(pattern='/bin (.+)'))
+async def bin_handler(event):
+    bin_number = event.pattern_match.group(1)
+
+    if not bin_number.isdigit():
+        await event.reply("❌ Send only BIN numbers (digits)")
+        return
+
+    result = check_bin(bin_number)
+
+    # handle error
+    if 'error' in result:
+        await event.reply("❌ BIN lookup failed")
+        return
+
+    # clean formatted output
+    msg = (
+        f"🏦 Bank: {result['bank']}\n"
+        f"💳 Type: {result['type']}\n"
+        f"🌍 Country: {result['country']}\n"
+        f"🏷 Brand: {result['brand']}"
+    )
+
+    await event.reply(msg)
+
+@bot.on(events.NewMessage(pattern='/details (.+)'))
+async def details_handler(event):
+    data = event.pattern_match.group(1)
+
+    result = parse_track_data(data)
+
+    if not result:
+        await event.reply("❌ Invalid track data")
+        return
+
+    msg = (
+        f"💳 Number: {result['number']}\n"
+        f"📅 Expiry: {result['expiry']}\n"
+        f"🔒 CVV: {result['cvv']}\n"
+        f"📄 Track: {result['track']}"
+    )
+
+    await event.reply(msg)
+
+@bot.on(events.NewMessage(pattern='/mdetails (.+)'))
+async def mdetails_handler(event):
+    data = event.pattern_match.group(1)
+
+    result = validate_dump(data)
+
+    # if invalid format
+    if 'error' in result:
+        await event.reply(f"❌ {result['error']}")
+        return
+
+    # safe bin info
+    bin_info = result.get('bin_info', {})
+
+    msg = (
+        f"💳 Number: {result['number']}\n"
+        f"📅 Expiry: {result['expiry']}\n"
+        f"🔒 CVV: {result['cvv']}\n\n"
+
+        f"✅ Luhn: {result['luhn_valid']}\n"
+        f"📆 Expiry Valid: {result['expiry_valid']}\n"
+        f"✔ Overall Valid: {result['overall_valid']}\n\n"
+
+        f"🏦 Bank: {bin_info.get('bank', 'Unknown')}\n"
+        f"💳 Type: {bin_info.get('type', 'Unknown')}\n"
+        f"🌍 Country: {bin_info.get('country', 'Unknown')}\n"
+        f"🏷 Brand: {bin_info.get('brand', 'Unknown')}"
+    )
+
+    await event.reply(str(result))
+
+@bot.on(events.NewMessage(pattern='/mcheck (.+)'))
+async def mcheck_handler(event):
+    file_name = event.pattern_match.group(1)
+
+    try:
+        result = bulk_check(file_name)
+        await event.reply(str(result))
+    except FileNotFoundError:
+        await event.reply("❌ File not found")
+    except Exception as e:
+        await event.reply(f"❌ Error: {str(e)}")
+
+  @bot.on(events.NewMessage(pattern='/start'))
+async def start(event):
+        await event.reply(
+    "🤖 Bot Ready!\n\n"
+    "/check\n"
+    "/bin\n"
+    "/details\n"
+    "/mdetails\n"
+    "/mcheck"
+    )
+
+print("Bot running...")
+bot.run_until_disconnected()

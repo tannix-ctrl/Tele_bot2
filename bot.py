@@ -26,11 +26,8 @@ def luhn_checksum(card_number):
     return checksum % 10 == 0
     
 def parse_track_data(track_data):
-    # Track1: B<accnum>^name^addr^city^state^zip^ctry^mod^exp^disco^
-    # Track2: ;accnum=exp=cvv|disc?
     track1 = re.search(r'B(\d+)\^([^^]+)\^?([^^]*)', track_data)
     track2 = re.search(r';(\d+)\=(\d{2})(\d{2})=(\d{3})?', track_data)
-    
     if track2:
         num, exp_yy, exp_mm, cvv = track2.groups()
         exp = f"{exp_mm}/{exp_yy}"
@@ -81,7 +78,6 @@ def validate_dump(track_data):
     
     return results
 
-# BULK CHECKER
 def bulk_check(dumps_file):
     valid = []
     invalid = []
@@ -94,11 +90,7 @@ def bulk_check(dumps_file):
             else:
                 invalid.append(res)
     return(f"Valid: {len(valid)} | Invalid: {len(invalid)}")
-    
-    
-    # Bulk: python dump_checker.py dumps.txt
-    # import sys
-    # bulk_check(sys.argv[1])
+
 @bot.on(events.NewMessage(pattern='/check (.+)'))
 async def check_handler(event):
     number = event.pattern_match.group(1)
@@ -126,8 +118,7 @@ async def bin_handler(event):
     if 'error' in result:
         await event.reply("❌ BIN lookup failed")
         return
-
-    # clean formatted output
+        
     msg = (
         f"🏦 Bank: {result['bank']}\n"
         f"💳 Type: {result['type']}\n"
@@ -161,13 +152,11 @@ async def mdetails_handler(event):
     data = event.pattern_match.group(1)
 
     result = validate_dump(data)
-
-    # if invalid format
+    
     if 'error' in result:
         await event.reply(f"❌ {result['error']}")
         return
-
-    # safe bin info
+        
     bin_info = result.get('bin_info', {})
 
     msg = (

@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 from telethon import TelegramClient, events
 
-API_ID = 
+API_ID = 38292208
 API_HASH = "db8848c255b56619b1f679455358edf0"
 BOT_TOKEN = "your_token"
 

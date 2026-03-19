@@ -26,8 +26,8 @@ def luhn_checksum(card_number):
     return checksum % 10 == 0
     
 def parse_track_data(track_data):
-    track1 = re.search(r'B(\d+)\^([^^]+)\^?([^^]*)', track_data)
-    track2 = re.search(r';(\d+)\=(\d{2})(\d{2})=(\d{3})?', track_data)
+    track1 = re.search(r'B(\d+)\^([^ ^]+)\^([^ ^]+)', track_data)
+    track2 = re.search(r';(\d+)=(\d{2})(\d{2})(\d{3})', track_data)
     if track2:
         num, exp_yy, exp_mm, cvv = track2.groups()
         exp = f"{exp_mm}/{exp_yy}"

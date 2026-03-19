@@ -13,14 +13,18 @@ bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 def luhn_checksum(card_number):
     def digits_of(n):
         return [int(d) for d in str(n)]
-    digits = digits_of(card_number)
-    odd_digits = digits[-1::-2]
-    even_digits = digits[-2::-2]
-    checksum = sum(odd_digits)
-    for d in even_digits:
-        checksum += sum(digits_of(d * 2))
-    return checksum % 10 == 0
 
+    digits = digits_of(card_number)
+    odd_digits = digits[-1::-2]
+    even_digits = digits[-2::-2]
+
+    checksum = sum(odd_digits)
+
+    for d in even_digits:
+        checksum += sum(digits_of(d * 2))
+
+    return checksum % 10 == 0
+    
 def parse_track_data(track_data):
     # Track1: B<accnum>^name^addr^city^state^zip^ctry^mod^exp^disco^
     # Track2: ;accnum=exp=cvv|disc?
